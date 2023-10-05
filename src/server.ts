@@ -1,11 +1,12 @@
 import app from './app';
 import { PORT } from './config';
 import { checkDB } from './services/reminder.service';
+import { Request, Response } from 'express';
 
 const intervalTime = 60000;
 
 setInterval(() => {
-  checkDB()
+  checkDB(<Request>{}, <Response>{})
     .then(() => {
       console.log("Successfully checked DB");
     })

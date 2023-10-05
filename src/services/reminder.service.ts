@@ -8,11 +8,9 @@ dotenv.config();
 
 const accountSid = process.env.TWILIO_SID;
 const authToken = process.env.TWILIO_AUTH;
-console.log("DEBUG | A A: ", accountSid, authToken);
 const client = twilio(accountSid, authToken);
 const from = process.env.FROM_NUMBER || "";
 const to = process.env.TO_NUMBER || "";
-console.log("DEBUG | BB, :", from, to);
 
 export function sendReminder(req: Request, res: Response) {
   try {
@@ -40,7 +38,7 @@ export function sendReminder(req: Request, res: Response) {
 }
 
 
-export async function checkDB() {
+export async function checkDB(req: Request, res: Response) {
   try {
     const db = mongodbClient.db(); // Use the MongoDB client
     const reminderCollection = db.collection('reminders'); // Use your collection name here
@@ -72,6 +70,7 @@ export async function checkDB() {
           })
           .catch((error) => {
             console.error(error);
+            // res.status(500).json({ error: 'Failed to send SMS' });
           });
       } catch (error) {
         console.error(error);
@@ -96,7 +95,7 @@ export async function checkDB() {
           repeat: record.repeat,
         };
         const updateID = record.reminderName;
-  
+
         const result = await reminderCollection.updateOne({ updateID }, { $set: updatedReminderObject });
         console.log('Updated MongoDB document:', result.modifiedCount);
       } else if (record.repeat == "2") {
@@ -118,7 +117,7 @@ export async function checkDB() {
           repeat: record.repeat,
         };
         const updateID = record.reminderName;
-  
+
         const result = await reminderCollection.updateOne({ updateID }, { $set: updatedReminderObject });
         console.log('Updated MongoDB document:', result.modifiedCount);
       } else if (record.repeat == "3") {
@@ -131,8 +130,10 @@ export async function checkDB() {
       }
     }
 
+    // res.json({ message: 'Matching Records Logged and Message sent successfully!' });
   } catch (error) {
     console.error(error);
+    // res.status(500).json({ error: 'Internal server error' });
   }
 }
 
