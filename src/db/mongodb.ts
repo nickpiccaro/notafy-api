@@ -1,6 +1,9 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
+import dotenv from 'dotenv';
 
-const uri = 'mongodb+srv://npiccaro:*Nick99atl@notafy-db.hmxl7h9.mongodb.net/notafyReminders?retryWrites=true&w=majority'; // Replace with your MongoDB URL
+dotenv.config();
+
+const uri = process.env.MONGO_DB_URI || "";
 const client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,
