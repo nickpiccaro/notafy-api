@@ -2,17 +2,22 @@ import { Request, Response } from 'express';
 import twilio from 'twilio';
 import mongodbClient from '../db/mongodb'; // Import the MongoDB client
 
-const accountSid = 'AC137e0be03cbfe9e9ce7de84ed64c4e47';
-const authToken = '1ccf6b06d3d91c8f971e9c6877f62d06';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const accountSid = process.env.TWILIO_SID;
+const authToken = process.env.TWILIO_AUTH;
+console.log("DEBUG | A A: ", accountSid, authToken);
 const client = twilio(accountSid, authToken);
+const from = process.env.FROM_NUMBER || "";
+const to = process.env.TO_NUMBER || "";
+console.log("DEBUG | BB, :", from, to);
 
 export function sendReminder(req: Request, res: Response) {
   try {
     const today = new Date();
     const yourBirthday = new Date('1999-09-24'); // Replace with your birthdate
-
-      const from = '+18447012692';
-      const to = '+19709460702';
 
     //   // Send the birthday SMS
       client.messages
@@ -35,7 +40,7 @@ export function sendReminder(req: Request, res: Response) {
 }
 
 
-export async function checkDB(req: Request, res: Response) {
+export async function checkDB() {
   try {
     const db = mongodbClient.db(); // Use the MongoDB client
     const reminderCollection = db.collection('reminders'); // Use your collection name here
@@ -55,8 +60,6 @@ export async function checkDB(req: Request, res: Response) {
     for (const record of matchingRecords) {
       console.log(`Match found at ${currentDateString} ${currentTimeString}: ${record.message}`);
       try {
-        const from = '+18447012692';
-        const to = '+19709460702';
         console.log("Trying to send reminder message");
         client.messages
           .create({
@@ -69,7 +72,6 @@ export async function checkDB(req: Request, res: Response) {
           })
           .catch((error) => {
             console.error(error);
-            res.status(500).json({ error: 'Failed to send SMS' });
           });
       } catch (error) {
         console.error(error);
@@ -129,10 +131,8 @@ export async function checkDB(req: Request, res: Response) {
       }
     }
 
-    res.json({ message: 'Matching Records Logged and Message sent successfully!' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
   }
 }
 
@@ -175,8 +175,6 @@ export async function receiveSMS(req: Request, res: Response) {
   const inputString: string = Body;
   console.log("Input string is: ", inputString);
   if (inputString == 'OPTIONS') {
-    const from = '+18447012692';
-    const to = '+19709460702';
 
     //   // Send the birthday SMS
     client.messages
@@ -196,8 +194,6 @@ export async function receiveSMS(req: Request, res: Response) {
     const matchingRecords = await reminderCollection.find({}).toArray();
     
     try {
-      const from = '+18447012692';
-      const to = '+19709460702';
       console.log("Trying to send ALL message");
       client.messages
         .create({
@@ -223,8 +219,6 @@ export async function receiveSMS(req: Request, res: Response) {
       const values = inputString.split(/\{|\}/).filter(val => val.trim() !== '');
 
       if (values.length !== 6) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -251,11 +245,8 @@ export async function receiveSMS(req: Request, res: Response) {
       const repeat = values[5].trim(); // 1 is do not repeat, 2 is repeat every week, 3 is repeat every month
 
       const existingReminder = await reminderCollection.findOne({ reminderID: reminderName });
-      console.log("DEBUG | existing Reminder: ", existingReminder);
 
       if (existingReminder) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -295,8 +286,6 @@ export async function receiveSMS(req: Request, res: Response) {
       const values = inputString.split(/\{|\}/).filter(val => val.trim() !== '');
 
       if (values.length !== 6) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -322,8 +311,6 @@ export async function receiveSMS(req: Request, res: Response) {
       const existingReminder = await reminderCollection.findOne({ reminderID });
 
       if (!existingReminder) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -372,8 +359,6 @@ export async function receiveSMS(req: Request, res: Response) {
       const values = inputString.split(/\{|\}/).filter(val => val.trim() !== '');
 
       if (values.length !== 2) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -400,8 +385,6 @@ export async function receiveSMS(req: Request, res: Response) {
       const existingReminder = await reminderCollection.findOne({ reminderID });
 
       if (!existingReminder) {
-        const from = '+18447012692';
-        const to = '+19709460702';
 
         //   // Send the birthday SMS
         client.messages
@@ -431,9 +414,6 @@ export async function receiveSMS(req: Request, res: Response) {
     }
   } else {
     console.log("Available action options not selected, start message with 1, 2, or 3");
-
-    const from = '+18447012692';
-    const to = '+19709460702';
 
   //   // Send the birthday SMS
     client.messages
